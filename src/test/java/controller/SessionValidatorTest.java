@@ -18,7 +18,7 @@ class SessionValidatorTest {
     @Test
     @DisplayName("Test: Session created and check the response")
     void testSessionJustCreated() {
-        String userId = "1";
+        int userId = 1;
         Optional<String> optionalSession = SessionController.INSTANCE.login(userId);
 
         if (optionalSession.isPresent()) {
@@ -26,7 +26,7 @@ class SessionValidatorTest {
             OptionalInt optionalUserId = sessionValidator.check(sessionKey);
 
             if (optionalUserId.isPresent()) {
-                assertEquals(userId, String.valueOf(optionalUserId.getAsInt()));
+                assertEquals(userId, optionalUserId.getAsInt());
             } else {
                 fail("UserId expected");
             }
@@ -39,7 +39,7 @@ class SessionValidatorTest {
     @DisplayName("Test: Multiple sessions but just last one is valid")
     void testMultipleSessionForSameUserJustLastOneIsValid() {
         final int size = 5;
-        String userId = "1";
+        int userId = 1;
 
         List<Optional<String>> resultList = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
@@ -53,7 +53,7 @@ class SessionValidatorTest {
                 OptionalInt optionalUserId = sessionValidator.check(sessionKey);
 
                 if ((resultList.indexOf(optional) == size - 1) && optionalUserId.isPresent()) { // latest key
-                    assertEquals(userId, String.valueOf(optionalUserId.getAsInt()));
+                    assertEquals(userId, optionalUserId.getAsInt());
                 } else {
                     assertEquals(OptionalInt.empty(), optionalUserId);
                 }
