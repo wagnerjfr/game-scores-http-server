@@ -22,11 +22,15 @@ class SessionControllerTest {
     @DisplayName("Test: Create a session with a valid user id")
     void testGenerateSessionValidUserId() throws InterruptedException {
         int userId = 1;
-        Status status = sessionController.login(String.valueOf(userId));
+        Optional<String> optionalLogin = sessionController.login(String.valueOf(userId));
 
-        String sessionKey = status.getMessage();
-        assertEquals(10, sessionKey.length());
-        assertEquals(HttpStatusCode.OK, status.getCode());
+        String sessionKey = "";
+        if (optionalLogin.isPresent()) {
+            sessionKey = optionalLogin.get();
+            assertEquals(10, sessionKey.length());
+        } else {
+            fail("Session key expected.");
+        }
 
         Thread.sleep(Duration.ofSeconds(2).toMillis());
 
@@ -49,11 +53,8 @@ class SessionControllerTest {
     @DisplayName("Test: Try to create sessions with invalid user ids")
     void testGenerateSessionInvalidUserId() {
         for (String invalidId : Arrays.asList("abc", "", null)) {
-            Status status = sessionController.login(invalidId);
-
-            String sessionKey = status.getMessage();
-            assertEquals("", sessionKey);
-            assertEquals(HttpStatusCode.BAD_REQUEST, status.getCode());
+            Optional<String> optionalSession = sessionController.login(invalidId);
+            assertEquals(Optional.empty(), optionalSession);
         }
     }
 }

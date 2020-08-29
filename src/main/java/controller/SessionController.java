@@ -2,7 +2,6 @@ package controller;
 
 import domain.Session;
 import repository.SessionRepository;
-import util.HttpStatusCode;
 import util.SessionKeyGenerator;
 
 import java.time.Duration;
@@ -14,7 +13,7 @@ public enum SessionController {
 
     public static final Duration VALID_PERIOD = Duration.ofMinutes(10);
 
-    public Status login(String urlUserId) {
+    public Optional<String> login(String urlUserId) {
         String result;
         try {
             int userId = Integer.parseInt(urlUserId);
@@ -26,9 +25,9 @@ public enum SessionController {
             result = sessionKey;
 
         } catch (NumberFormatException e) {
-            return new Status(HttpStatusCode.BAD_REQUEST, "");
+            return Optional.empty();
         }
-        return new Status(HttpStatusCode.OK, result);
+        return Optional.of(result);
     }
 
     public Optional<Session> getSession(String sessionKey) {

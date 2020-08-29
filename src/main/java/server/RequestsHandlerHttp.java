@@ -10,6 +10,7 @@ import util.HttpStatusCode;
 import java.io.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 public class RequestsHandlerHttp implements HttpHandler {
 
@@ -34,7 +35,12 @@ public class RequestsHandlerHttp implements HttpHandler {
             case GET:
                 switch (context) {
                     case "login":
-                        status = SessionController.INSTANCE.login(id);
+                        Optional<String> optionalSession = SessionController.INSTANCE.login(id);
+                        if (optionalSession.isPresent()) {
+                            status = new Status(HttpStatusCode.OK, optionalSession.get());
+                        } else {
+                            status = new Status(HttpStatusCode.BAD_REQUEST, "");
+                        }
                         break;
 
                     case "highscorelist":

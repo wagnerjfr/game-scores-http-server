@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class ScoreControllerTest {
 
@@ -46,11 +48,15 @@ class ScoreControllerTest {
             levelId = "100";
             final String stringResponse = "1=1000";
 
-            String sessionKey = sessionController.login(String.valueOf(1)).getMessage();
-            String uri = String.format(_URI, levelId, sessionKey);
-            scoreController.addScore(uri, String.format(REQUEST_BODY, 1000));
-
-            assertEquals(stringResponse, scoreController.getScores(levelId).getMessage());
+            Optional<String> optionalSession = sessionController.login(String.valueOf(1));
+            if (optionalSession.isPresent()) {
+                String sessionKey = optionalSession.get();
+                String uri = String.format(_URI, levelId, sessionKey);
+                scoreController.addScore(uri, String.format(REQUEST_BODY, 1000));
+                assertEquals(stringResponse, scoreController.getScores(levelId).getMessage());
+            } else {
+                fail("Session key expected.");
+            }
         }
 
         @Test
@@ -67,11 +73,15 @@ class ScoreControllerTest {
                 .collect(Collectors.joining(","));
 
             for (int userId : userIdList) {
-                String sessionKey = sessionController.login(String.valueOf(userId)).getMessage();
-                String uri = String.format(_URI, levelId, sessionKey);
-                scoreController.addScore(uri, String.format(REQUEST_BODY, multiply.apply(userId)));
+                Optional<String> optionalSession = sessionController.login(String.valueOf(userId));
+                if (optionalSession.isPresent()) {
+                    String sessionKey = optionalSession.get();
+                    String uri = String.format(_URI, levelId, sessionKey);
+                    scoreController.addScore(uri, String.format(REQUEST_BODY, multiply.apply(userId)));
+                } else {
+                    fail("Session key expected.");
+                }
             }
-
             assertEquals(stringResponse, scoreController.getScores(levelId).getMessage());
         }
 
@@ -190,9 +200,12 @@ class ScoreControllerTest {
         private String uri;
 
         Writer(String userId, int numberOfScores) {
-            this.sessionKey = sessionController.login(userId).getMessage();
-            this.numberOfScores = numberOfScores;
-            this.uri = String.format(_URI, LEVEL_ID, sessionKey);
+            Optional<String> optionalSession = sessionController.login(userId);
+            if (optionalSession.isPresent()) {
+                this.sessionKey = optionalSession.get();
+                this.numberOfScores = numberOfScores;
+                this.uri = String.format(_URI, LEVEL_ID, sessionKey);
+            }
         }
 
         @Override
