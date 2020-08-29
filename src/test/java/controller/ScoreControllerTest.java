@@ -1,6 +1,5 @@
 package controller;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,7 +19,6 @@ import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ScoreControllerTest {
@@ -138,8 +136,8 @@ class ScoreControllerTest {
     }
 
     private interface Sleepable {
-        int MIN_SLEEP = 200;
-        int MAX_SLEEP = 1000;
+        int MIN_SLEEP = 10;
+        int MAX_SLEEP = 50;
 
         default void waitForSomeSeconds() throws InterruptedException {
             Thread.sleep(ThreadLocalRandom.current().nextInt(MIN_SLEEP, MAX_SLEEP));

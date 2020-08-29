@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public enum ScoreRepository {
     INSTANCE;
@@ -15,6 +17,10 @@ public enum ScoreRepository {
     public static final int MAX_SIZE = 15;
 
     private Map<Integer, Board> scoreMap;
+
+    private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
+    private final Lock read = rwl.readLock();
+    private final Lock write = rwl.writeLock();
 
     public enum ResultType {
         MIN, MAX
@@ -25,18 +31,59 @@ public enum ScoreRepository {
     }
 
     public void register(int levelId, int userId, int score) {
-        if (!scoreMap.containsKey(levelId)) {
-            scoreMap.put(levelId, new Board(levelId, MAX_SIZE));
+        if (!containsLevelId(levelId)) {
+            createBoard(levelId);
         }
-        Board board = scoreMap.get(levelId);
-        board.add(userId, score);
+        addScoreToBoard(levelId, userId, score);
+    }
+
+    private boolean containsLevelId(int levelId) {
+        read.lock();
+        try {
+            return scoreMap.containsKey(levelId);
+        } finally {
+            read.unlock();
+        }
+    }
+
+    private void createBoard(int levelId) {
+        write.lock();
+        try {
+            scoreMap.put(levelId, new Board(levelId, MAX_SIZE));
+        } finally {
+            write.unlock();
+        }
+    }
+
+    private void addScoreToBoard(int levelId, int userId, int score) {
+        write.lock();
+        try {
+            Board board = getBoard(levelId);
+            board.add(userId, score);
+        } finally {
+            write.unlock();
+        }
+    }
+
+    private Board getBoard(int levelId) {
+        read.lock();
+        try {
+            return scoreMap.get(levelId);
+        } finally {
+            read.unlock();
+        }
     }
 
     public List<UserScore> getScores(int levelId) {
         List<UserScore> resultList = Collections.emptyList();
 
-        if (scoreMap.containsKey(levelId)) {
-            resultList = scoreMap.get(levelId).getBoard();
+        read.lock();
+        try {
+            if (containsLevelId(levelId)) {
+                resultList = scoreMap.get(levelId).getBoard();
+            }
+        } finally {
+            read.unlock();
         }
 
         return resultList;
@@ -45,12 +92,10 @@ public enum ScoreRepository {
     public Optional<UserScore> getUserScore(int levelId, ResultType type) {
         Optional<UserScore> optionalResult = Optional.empty();
 
-        if (scoreMap.containsKey(levelId)) {
-            if (type.equals(ResultType.MIN)) {
-                optionalResult = Optional.of(scoreMap.get(levelId).getMinUserScore());
-            } else { // MAX
-                optionalResult = Optional.of(scoreMap.get(levelId).getMaxUserScore());
-            }
+        if (containsLevelId(levelId)) {
+            Board board = getBoard(levelId);
+            UserScore userScore = type.equals(ResultType.MIN) ? board.getMinUserScore() : board.getMaxUserScore();
+            optionalResult = Optional.of(userScore);
         }
 
         return optionalResult;

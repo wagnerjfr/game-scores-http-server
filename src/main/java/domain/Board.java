@@ -23,7 +23,7 @@ public final class Board {
             .thenComparing(UserScore::getUserId));
     }
 
-    public void add(int userId, int score) {
+    public synchronized void add(int userId, int score) {
         Optional<UserScore> optionalUserScore = scoreSet.parallelStream()
             .filter(us -> us.getUserId() == userId)
             .findFirst();

@@ -5,10 +5,7 @@ import repository.ScoreRepository;
 import util.HttpStatusCode;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 public enum ScoreController {
@@ -16,10 +13,6 @@ public enum ScoreController {
 
     private static final int PARAM_VALUE_IDX = 1;
     private static final String EQUAL_DELIMITER = "=";
-
-    private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-    private final Lock r = rwl.readLock();
-    private final Lock w = rwl.writeLock();
 
     public Status addScore(String uri, String requestBody) {
         int levelId;
@@ -38,21 +31,17 @@ public enum ScoreController {
             return new Status(HttpStatusCode.BAD_REQUEST, String.format("Bad request: %s", e.getMessage()));
         }
 
-        // Process request
-        int code = HttpStatusCode.CREATED;
-        w.lock();
-        try {
-            OptionalInt optionalUserId = SessionValidator.INSTANCE.check(sessionKey);
+        int code;
+        OptionalInt optionalUserId = SessionValidator.INSTANCE.check(sessionKey);
 
-            if (optionalUserId.isPresent()) {
-                ScoreRepository.INSTANCE.register(levelId, optionalUserId.getAsInt(), score);
-            } else {
-                code = HttpStatusCode.UNAUTHORIZED;
-            }
-
-        } finally {
-            w.unlock();
+        if (optionalUserId.isPresent()) {
+            // Process request
+            ScoreRepository.INSTANCE.register(levelId, optionalUserId.getAsInt(), score);
+            code = HttpStatusCode.CREATED;
+        } else {
+            code = HttpStatusCode.UNAUTHORIZED;
         }
+
         return new Status(code, "");
     }
 
@@ -66,17 +55,12 @@ public enum ScoreController {
             return new Status(HttpStatusCode.BAD_REQUEST, "");
         }
 
-        r.lock();
-        try {
-            List<UserScore> userScoreList = ScoreRepository.INSTANCE.getScores(levelId);
+        List<UserScore> userScoreList = ScoreRepository.INSTANCE.getScores(levelId);
 
-            result = userScoreList.stream()
-                .map(UserScore::toString)
-                .collect(Collectors.joining(","));
+        result = userScoreList.stream()
+            .map(UserScore::toString)
+            .collect(Collectors.joining(","));
 
-        } finally {
-            r.unlock();
-        }
         return new Status(HttpStatusCode.OK, result);
     }
 }
