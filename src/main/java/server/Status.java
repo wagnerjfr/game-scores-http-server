@@ -1,20 +1,20 @@
-package controller;
+package server;
 
-public final class Status {
+final class Status {
 
     private int code;
     private String message;
 
-    public Status(int code, String message) {
+    Status(int code, String message) {
         this.code = code;
         this.message = message;
     }
 
-    public int getCode() {
+    int getCode() {
         return code;
     }
 
-    public String getMessage() {
+    String getMessage() {
         return message;
     }
 }

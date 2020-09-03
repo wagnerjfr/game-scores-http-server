@@ -2,7 +2,6 @@ package util;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import util.SessionKeyGenerator;
 
 import java.util.HashMap;
 import java.util.Map;

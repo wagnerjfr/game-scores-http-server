@@ -3,10 +3,8 @@ package controller;
 import domain.Session;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import util.HttpStatusCode;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
@@ -22,11 +20,15 @@ class SessionControllerTest {
     @DisplayName("Test: Create a session with a valid user id")
     void testGenerateSessionValidUserId() throws InterruptedException {
         int userId = 1;
-        Status status = sessionController.login(String.valueOf(userId));
+        Optional<String> optionalLogin = sessionController.login(userId);
 
-        String sessionKey = status.getMessage();
-        assertEquals(10, sessionKey.length());
-        assertEquals(HttpStatusCode.OK, status.getCode());
+        String sessionKey = "";
+        if (optionalLogin.isPresent()) {
+            sessionKey = optionalLogin.get();
+            assertEquals(10, sessionKey.length());
+        } else {
+            fail("Session key expected.");
+        }
 
         Thread.sleep(Duration.ofSeconds(2).toMillis());
 
@@ -42,18 +44,6 @@ class SessionControllerTest {
             assertTrue(session.getDateExpiry().before(expiredDate));
         } else {
             fail("Session expected");
-        }
-    }
-
-    @Test
-    @DisplayName("Test: Try to create sessions with invalid user ids")
-    void testGenerateSessionInvalidUserId() {
-        for (String invalidId : Arrays.asList("abc", "", null)) {
-            Status status = sessionController.login(invalidId);
-
-            String sessionKey = status.getMessage();
-            assertEquals("", sessionKey);
-            assertEquals(HttpStatusCode.BAD_REQUEST, status.getCode());
         }
     }
 }
