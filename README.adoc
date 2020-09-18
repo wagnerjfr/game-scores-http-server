@@ -1,3 +1,6 @@
+image:https://travis-ci.org/wagnerjfr/game-scores-http-server.svg?branch=master[Build Status,link=https://travis-ci.org/wagnerjfr/game-scores-http-server]
+image:https://codecov.io/gh/wagnerjfr/game-scores-http-server/branch/master/graph/badge.svg?token=WBGU823M4L[Build Status,link=https://codecov.io/gh/wagnerjfr/game-scores-http-server]
+
 = Game Scores Register (HTTP Server)
 HTTP-based mini game back-end in Java which registers game scores for different users and levels, with the capability to return high score lists per level.
 
@@ -12,12 +15,23 @@ HTTP-based mini game back-end in Java which registers game scores for different 
 
 == 2. How to start the server
 
-The HTTP server can be launched in terminal by running:
-
-`java -jar game-scores-0.0.1.jar`
-
+Clone and build the project:
 ----
-computer:~/GameScores/$ java -jar game-scores-0.0.1.jar
+$ git clone https://github.com/wagnerjfr/game-scores-http-server.git
+
+$ cd game-scores-http-server
+
+$ mvn clean package
+----
+
+The HTTP server can be launched in terminal by running:
+----
+$ java -jar target/game-scores-0.0.1.jar
+----
+
+Output:
+----
+computer:~/game-scores-http-server/$ java -jar target/game-scores-0.0.1.jar
 
 WebServerHttp is listening on port 8081
 
