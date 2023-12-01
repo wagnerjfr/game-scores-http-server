@@ -97,7 +97,7 @@ public class RequestsHandlerHttp implements HttpHandler {
                 int index = uri.indexOf(equalDelimiter);
                 sessionKey = uri.substring(index + 1);
 
-            } catch (NumberFormatException e) {
+            } catch (Exception e) {
                 return new Status(HttpStatusCode.BAD_REQUEST, String.format("Bad request: %s", e.getMessage()));
             }
 
